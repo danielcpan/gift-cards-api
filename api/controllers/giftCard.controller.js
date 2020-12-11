@@ -19,22 +19,6 @@ module.exports = {
     }
   },
 
-  // Responds with a test token
-  getGenericJwt: async (req, res, next) => {
-    const randUser = {
-      user: {
-        id: '123',
-      },
-    };
-
-    try {
-      const token = await createToken(randUser);
-      return res.status(httpStatus.OK).send(token);
-    } catch (err) {
-      return next(err);
-    }
-  },
-
   createAccount: (req, res, next) => {
     try {
       // MAKE ACCOUNT
