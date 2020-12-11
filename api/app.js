@@ -25,12 +25,14 @@ app.use(cors());
 
 // ENABLE DETAILED API LOGGING IN DEV ENV
 if (config.ENV === 'development') {
-  app.use(expressWinston.logger({
-    winstonInstance,
-    meta: true,
-    msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
-    colorStatus: true,
-  }));
+  app.use(
+    expressWinston.logger({
+      winstonInstance,
+      meta: true,
+      msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
+      colorStatus: true
+    })
+  );
 }
 
 // MOUNT ALL ROUTES ON API

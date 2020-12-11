@@ -9,7 +9,6 @@
 // describe('## EMAIL APIs', () => {
 //   before(async () => {});
 
-
 //   describe('# GET /api/users/', () => {
 //     it('should get user', async () => {
 //       const response = await request(app).get('/api/users/');

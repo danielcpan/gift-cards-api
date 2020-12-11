@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const GiftCard = require('models/giftCard.model');
+const Listing = require('models/listing.model');
 const APIError = require('utils/APIError.utils');
 const { addToCache } = require('utils/redis.utils');
 
@@ -7,14 +7,14 @@ module.exports = {
   get: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const giftCard = await GiftCard.findById(id);
+      const listing = await Listing.findById(id);
 
-      if (!giftCard) {
+      if (!listing) {
         return next(new APIError('Recipe not found', httpStatus.NOT_FOUND));
       }
 
-      addToCache(req, 300, giftCard);
-      return res.json(giftCard);
+      addToCache(req, 300, listing);
+      return res.json(listing);
     } catch (err) {
       return next(err);
     }

@@ -9,7 +9,6 @@ after(async () => {
 describe('## EMAIL APIs', () => {
   before(async () => {});
 
-
   describe('# GET /api/emails/single', () => {
     it('should get single email details', async () => {
       const response = await request(app).get('/api/emails/single');

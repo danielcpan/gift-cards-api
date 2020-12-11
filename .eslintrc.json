@@ -22,5 +22,12 @@
       "tabWidth": 2,
       "trailingComma": "none"
     }]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "paths": ["api"]
+      }
+    }
   }
 }

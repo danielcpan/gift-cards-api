@@ -5,11 +5,11 @@ const config = require('../../config/config');
 
 const getAsync = promisify(redis.get).bind(redis);
 
-const buildKey = (req) => req.originalUrl.replace('/api/', '').replace('/', ':');
+const buildKey = req => req.originalUrl.replace('/api/', '').replace('/', ':');
 
 const connectRedis = () => {
   redis.on('connect', () => console.log('Redis Connection Succesful'));
-  redis.on('error', (err) => console.log(`Redis Connection Error ${err}`));
+  redis.on('error', err => console.log(`Redis Connection Error ${err}`));
 };
 
 const checkCache = async (req, res, next) => {
@@ -50,5 +50,5 @@ module.exports = {
   connectRedis,
   checkCache,
   addToCache,
-  redis,
+  redis
 };

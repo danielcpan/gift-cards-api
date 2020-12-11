@@ -8,7 +8,7 @@ module.exports = {
       mongoose.connect(config.MONGODB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        useCreateIndex: true,
+        useCreateIndex: true
       });
       console.log('Mongo Connection Successful');
     } catch (err) {
@@ -19,5 +19,5 @@ module.exports = {
     if (mongoose.connection.db) {
       await mongoose.connection.db.dropDatabase();
     }
-  },
+  }
 };

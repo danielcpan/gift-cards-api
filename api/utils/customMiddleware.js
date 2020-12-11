@@ -30,5 +30,5 @@ module.exports = {
     if (req.user) return next();
 
     return res.status(403).send('Please log in by providing a valid token with your request!');
-  },
+  }
 };
