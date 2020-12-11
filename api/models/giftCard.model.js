@@ -4,15 +4,15 @@ const GiftCardSchema = new mongoose.Schema(
   {
     brandName: {
       type: String,
-      required: true,
+      required: true
     },
     logoUrl: {
-      type: String,
+      type: String
     },
-    listings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
+    listings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }]
   },
   {
-    timestamps: true,
-  },
+    timestamps: true
+  }
 );
 module.exports = mongoose.model('GiftCard', GiftCardSchema);

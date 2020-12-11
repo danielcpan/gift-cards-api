@@ -4,23 +4,23 @@ const ListingSchema = new mongoose.Schema(
   {
     giftCardId: {
       type: String,
-      required: true,
+      required: true
     },
     marketId: {
       type: String,
-      required: true,
+      required: true
     },
     value: {
       type: Number,
-      required: true,
+      required: true
     },
     price: {
       type: Number,
-      required: true,
-    },
+      required: true
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 

@@ -4,7 +4,7 @@
     "es6": true,
     "node": true
   },
-  "extends": ["prettier", "airbnb-base"],
+  "extends": ["airbnb", "prettier" ],
   "plugins": ["prettier"],
   "globals": {
     "Atomics": "readonly",
@@ -14,16 +14,13 @@
     "ecmaVersion": 2018
   },
   "rules": {
-    "prettier/prettier": [
-      "error",
-      {
-        "semi": true,
-        "arrowParens": "avoid",
-        "singleQuote": true,
-        "printWidth": 100,
-        "tabWidth": 2,
-        "trailingComma": "es5",
-      }
-    ]
+    "prettier/prettier":  ["error", {
+      "semi": true,
+      "arrowParens": "avoid",
+      "singleQuote": true,
+      "printWidth": 100,
+      "tabWidth": 2,
+      "trailingComma": "none"
+    }]
   }
 }
