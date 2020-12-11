@@ -14,6 +14,16 @@
     "ecmaVersion": 2018
   },
   "rules": {
-    "prettier/prettier": "error"
+    "prettier/prettier": [
+      "error",
+      {
+        "semi": true,
+        "arrowParens": "avoid",
+        "singleQuote": true,
+        "printWidth": 100,
+        "tabWidth": 2,
+        "trailingComma": "es5",
+      }
+    ]
   }
 }
