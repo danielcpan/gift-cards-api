@@ -1,1 +1,1 @@
-# gift-cards-api
+# gift-card-api

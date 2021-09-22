@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "strict": false,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["src/*"],
+      "config": ["./config"]
+    }
+  },
+  "include": ["src/**/*"]
+}
