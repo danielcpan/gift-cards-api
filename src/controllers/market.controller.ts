@@ -36,34 +36,4 @@ const list = async (req, res, next) => {
   }
 };
 
-const create = async (req, res, next) => {
-  try {
-    const market = new Market(req.body);
-
-    await market.save();
-
-    return res.status(httpStatus.CREATED).json(market);
-  } catch (err) {
-    return next(err);
-  }
-};
-
-const update = async (req, res, next) => {
-  try {
-    const market = await Market.findOne({ _id: req.params.id });
-
-    if (!market) {
-      return next(new APIError('Market not found', httpStatus.NOT_FOUND));
-    }
-
-    market.set(req.body);
-
-    await market.save();
-
-    return res.status(httpStatus.OK).json(market);
-  } catch (err) {
-    return next(err);
-  }
-};
-
-export default { get, list, create, update };
+export default { get, list };

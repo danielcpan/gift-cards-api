@@ -4,10 +4,10 @@ import { parse } from 'json2csv';
 import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
-import apiClient from '~/apiClient';
 import { Markets } from '~/models/market.model';
 import { delay } from '~/utils/generic.utils';
 import { GiftCardDocument, GiftCardType } from '~/models/giftCard.model';
+import { giftCardCtrlInternal } from '~/controllers';
 
 // NOTE: Raise Scraper Client
 const raiseClient = axios.create({ baseURL: 'https://www.raise.com' });
@@ -105,19 +105,16 @@ const run = async () => {
         const [giftCardDetails, paginationDetails] = await getGiftCardDetails(id);
 
         // NOTE: Create gift card if doesn't exist
-        const { data: giftCard } = await apiClient.post<GiftCardDocument>(
-          '/giftCards',
-          giftCardDetails
-        );
+        const giftCard = await giftCardCtrlInternal.create(giftCardDetails);
 
         const listings = await getListings(giftCard.id, paginationDetails);
 
         // NOTE: Import listings
-        await apiClient.post(
-          '/updateListings',
-          { listings, marketId: Markets.RAISE },
-          { params: { giftCardId: giftCard.id } }
-        );
+        await giftCardCtrlInternal.updateListings({
+          giftCardId: giftCard.id,
+          marketId: Markets.RAISE,
+          listings
+        });
 
         fufilled.push(giftCard.id);
         return giftCard;

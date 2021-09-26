@@ -1,11 +1,10 @@
 import express from 'express';
-import { marketController } from '~/controllers';
+import { marketCtrl } from '~/controllers';
 import { checkCache } from '~/utils/redis.utils';
 
 const router = express.Router();
 
-router.route('/').get(checkCache, marketController.list).post(marketController.create);
-
-router.route('/:marketId').get(checkCache, marketController.get).put(marketController.update);
+router.route('/').get(checkCache, marketCtrl.list);
+router.route('/:marketId').get(checkCache, marketCtrl.get);
 
 export default router;

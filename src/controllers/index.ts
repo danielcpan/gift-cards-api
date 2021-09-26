@@ -1,2 +1,3 @@
-export { default as giftCardController } from './giftCard.controller';
-export { default as marketController } from './market.controller';
+export { default as giftCardCtrl } from './giftCard.controller';
+export { default as giftCardCtrlInternal } from './giftCard.controller.internal';
+export { default as marketCtrl } from './market.controller';
