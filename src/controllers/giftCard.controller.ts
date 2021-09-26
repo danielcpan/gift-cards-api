@@ -8,8 +8,6 @@ interface GetParams {
   giftCardId: number;
 }
 
-// Needs to draw a random one
-// const get: API<GetParams> = async (req, res, next) => {
 const get = async (req: Request<GetParams>, res: Response<GiftCardDocument>, next: Next) => {
   try {
     const giftCard = await GiftCard.findOne({ _id: req.params.giftCardId });

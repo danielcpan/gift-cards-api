@@ -8,8 +8,6 @@ interface GetParams {
   marketId: number;
 }
 
-// Needs to draw a random one
-// const get: API<GetParams> = async (req, res, next) => {
 const get = async (req: Request<GetParams>, res: Response<MarketDocument>, next: Next) => {
   try {
     const market = await Market.findOne({ _id: req.params.marketId });
