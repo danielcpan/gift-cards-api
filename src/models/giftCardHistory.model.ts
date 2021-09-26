@@ -1,10 +1,10 @@
 import { Document, Schema, Model, model } from 'mongoose';
-import type { Market } from './market.model';
+import type { MarketType } from './market.model';
 
 export interface GiftCard {
   name: string;
   logoUrl: string;
-  markets: Market[];
+  markets: MarketType[];
 }
 
 interface History {
@@ -29,7 +29,7 @@ const GiftCardSchema = new Schema<GiftCardDocument, GiftCardModel>(
     quanity: { type: Number, required: true },
     savings: { type: Number, required: true },
     giftCard: { type: Schema.Types.ObjectId, ref: 'GiftCard' },
-    market: { type: Schema.Types.ObjectId, ref: 'Market' },
+    market: { type: Schema.Types.ObjectId, ref: 'Market' }
   },
   {
     timestamps: true

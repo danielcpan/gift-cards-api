@@ -1,23 +1,28 @@
 import { Document, Schema, Model, model } from 'mongoose';
-import type { GiftCard } from './giftCard.model';
-import type { Listing } from './listing.model';
+import type { GiftCardType } from './giftCard.model';
+import type { ListingType } from './listing.model';
 
-export interface Market {
-  name: string;
+export enum Markets {
+  RAISE = 'Raise'
+}
+
+export interface MarketType {
+  // name: string;
   logoUrl: string;
   url: string;
   warranty: number;
-  giftCards: GiftCard[];
-  listings: Listing[];
+  giftCards: GiftCardType[];
+  listings: ListingType[];
 }
 
-export interface MarketDocument extends Document {}
+export interface MarketDocument extends MarketType, Document {}
 
 interface MarketModel extends Model<MarketDocument> {}
 
 const MarketSchema = new Schema<MarketModel>(
   {
-    name: { type: String, required: true, unique: true },
+    _id: { type: String, enum: [Markets.RAISE], required: true },
+    // name: { type: String, required: true, unique: true },
     logoUrl: { type: String, required: true },
     url: { type: String, required: true },
     warranty: { type: Number, requried: true },
@@ -25,7 +30,8 @@ const MarketSchema = new Schema<MarketModel>(
     listings: [{ type: Schema.Types.ObjectId, ref: 'Listing' }]
   },
   {
-    timestamps: true
+    timestamps: true,
+    _id: false
   }
 );
 

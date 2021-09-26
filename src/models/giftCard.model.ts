@@ -1,15 +1,15 @@
 import { Document, Schema, Model, model } from 'mongoose';
-import { Listing } from './listing.model';
-import type { Market } from './market.model';
+import { ListingType } from './listing.model';
+import type { MarketType } from './market.model';
 
-export interface GiftCard {
+export interface GiftCardType {
   name: string;
   logoUrl: string;
-  listings: Listing[];
-  markets: Market[];
+  listings: ListingType[];
+  markets: MarketType[];
 }
 
-export interface GiftCardDocument extends GiftCard, Document {}
+export interface GiftCardDocument extends GiftCardType, Document {}
 
 interface GiftCardModel extends Model<GiftCardDocument> {}
 

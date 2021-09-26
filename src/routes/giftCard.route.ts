@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.route('/').get(checkCache, giftCardController.list).post(giftCardController.create);
 
-router.route('/:giftCardId').get(checkCache, giftCardController.get).put(giftCardController.update);
+router.route('/:giftCardId').get(checkCache, giftCardController.get);
+
+router.route('/updateListings/:giftCardId').put(giftCardController.updateListings);
 
 export default router;

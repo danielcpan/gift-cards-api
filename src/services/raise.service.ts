@@ -4,14 +4,17 @@ import { parse } from 'json2csv';
 import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
+import apiClient from '~/apiClient';
+import { Markets } from '~/models/market.model';
+import { delay } from '~/utils/generic.utils';
+import { GiftCardDocument, GiftCardType } from '~/models/giftCard.model';
 
-const delay = (milliseconds: number) => new Promise(resolve => setTimeout(resolve, milliseconds));
-
-const BASE_URL = 'https://www.raise.com';
+// NOTE: Raise Scraper Client
+const raiseClient = axios.create({ baseURL: 'https://www.raise.com' });
 
 const getGiftCardIds = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/gift-card-balance`);
+    const response = await raiseClient.get('/gift-card-balance');
 
     const $ = cheerio.load(response.data, { xml: { normalizeWhitespace: true } });
 
@@ -25,26 +28,70 @@ const getGiftCardIds = async () => {
   }
 };
 
-const getGiftCardDetails = async (id: string) => {
+type PaginationDetails = {
+  page: number;
+  perPage: number;
+  totalCards: number;
+  totalPages: number;
+};
+
+const getListings = async (giftCardId: string, { page, totalCards }: PaginationDetails) => {
+  try {
+    const response = await raiseClient.get(`/merchant/listings/${giftCardId}/${page}`, {
+      params: {
+        discount_sort: 'desc',
+        per: totalCards,
+        price_min: 5,
+        price_max: 2000
+      }
+    });
+
+    return response.data.map(el => ({
+      type: el.electronic ? 'DIGITAL' : 'PHYSICAL',
+      value: el.value,
+      savings: parseFloat(el.discount)
+    }));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const getGiftCardDetails = async (
+  id: string
+): Promise<[Pick<GiftCardType, 'name' | 'logoUrl'>, PaginationDetails]> => {
   try {
     const params = { type: 'paths', keywords: id };
-    const data = (await axios.get(`${BASE_URL}/query`, { params })).data;
+    const data = (await raiseClient.get('/query', { params })).data;
 
-    const giftCard = {
+    const giftCardDetails = {
       name: data.name,
       logoUrl: data.src
-      // rating: data.rating,
-      // ratingCount: data.ratingCount,
-      // quantity: data.quantity_available,
-      // savings: parseFloat(data.savings),
-      // cardType: data.physical ? 'PHYSICAL' : 'DIGITAL'
     };
 
-    return giftCard;
+    const paginationDetails: PaginationDetails = {
+      page: data.page,
+      perPage: data.perPage,
+      totalPages: data.totalPages,
+      totalCards: data.totalCards
+    };
+
+    return [giftCardDetails, paginationDetails];
   } catch (err) {
     throw err;
   }
 };
+
+import logResults = (fufilled, rejected) => {
+  try {
+    const csv = parse({ fufilled, rejected });
+
+    const fileName = new Date().toISOString().split('T')[0];
+
+    fs.writeFileSync(path.resolve(__dirname, `./raise-import-results-${fileName}.csv`), csv);
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 const run = async () => {
   const ids = await getGiftCardIds();
@@ -55,8 +102,24 @@ const run = async () => {
       await delay(idx * 50);
 
       try {
-        const giftCard = await getGiftCardDetails(id);
-        fufilled.push(giftCard);
+        const [giftCardDetails, paginationDetails] = await getGiftCardDetails(id);
+
+        // NOTE: Create gift card if doesn't exist
+        const { data: giftCard } = await apiClient.post<GiftCardDocument>(
+          '/giftCards',
+          giftCardDetails
+        );
+
+        const listings = await getListings(giftCard.id, paginationDetails);
+
+        // NOTE: Import listings
+        await apiClient.post(
+          '/updateListings',
+          { listings, marketId: Markets.RAISE },
+          { params: { giftCardId: giftCard.id } }
+        );
+
+        fufilled.push(giftCard.id);
         return giftCard;
       } catch (err) {
         rejected.push(id);
@@ -68,17 +131,9 @@ const run = async () => {
     })
   );
 
-  console.log('rejected:', rejected);
-
-  try {
-    const csv = parse(fufilled);
-
-    const fileName = new Date().toISOString().split('T')[0];
-
-    fs.writeFileSync(path.resolve(__dirname, `./raise-${fileName}.csv`), csv);
-  } catch (err) {
-    console.error(err);
-  }
+  console.error('rejected:', rejected);
+  
+  logResults(fufilled, rejected);
 };
 
 run();

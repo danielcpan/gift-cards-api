@@ -1,21 +1,21 @@
 import { Document, Schema, Model, model } from 'mongoose';
-import type { GiftCard } from './giftCard.model';
-import type { Market } from './market.model';
+import type { GiftCardType } from './giftCard.model';
+import type { MarketType } from './market.model';
 
-enum CardType {
+enum CardTypes {
   PHYSICAL = 'PHYSICAL',
   DIGITAL = 'DIGITAL'
 }
 
-export interface Listing {
-  type: CardType;
+export interface ListingType {
+  type: CardTypes;
   value: number;
   savings: number;
-  giftCard: GiftCard;
-  market: Market;
+  giftCard: GiftCardType;
+  market: MarketType;
 }
 
-export interface ListingDocument extends Listing, Document {}
+export interface ListingDocument extends ListingType, Document {}
 
 interface ListingModel extends Model<ListingDocument> {}
 
@@ -23,8 +23,8 @@ const ListingSchema = new Schema<ListingDocument, ListingModel>(
   {
     type: {
       type: String,
-      enum: [CardType.PHYSICAL, CardType.DIGITAL],
-      default: CardType.DIGITAL,
+      enum: [CardTypes.PHYSICAL, CardTypes.DIGITAL],
+      default: CardTypes.DIGITAL,
       required: true
     },
     value: { type: Number, required: true },
