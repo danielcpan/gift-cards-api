@@ -81,7 +81,7 @@ const getGiftCardDetails = async (
   }
 };
 
-import logResults = (fufilled, rejected) => {
+const logResults = (fufilled: string[], rejected: string[]) => {
   try {
     const csv = parse({ fufilled, rejected });
 
@@ -91,7 +91,7 @@ import logResults = (fufilled, rejected) => {
   } catch (err) {
     console.error(err);
   }
-}
+};
 
 const run = async () => {
   const ids = await getGiftCardIds();
@@ -132,7 +132,7 @@ const run = async () => {
   );
 
   console.error('rejected:', rejected);
-  
+
   logResults(fufilled, rejected);
 };
 

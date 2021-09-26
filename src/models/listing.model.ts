@@ -2,7 +2,7 @@ import { Document, Schema, Model, model } from 'mongoose';
 import type { GiftCardType } from './giftCard.model';
 import type { MarketType } from './market.model';
 
-enum CardTypes {
+export enum CardTypes {
   PHYSICAL = 'PHYSICAL',
   DIGITAL = 'DIGITAL'
 }

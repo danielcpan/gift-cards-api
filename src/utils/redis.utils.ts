@@ -36,7 +36,13 @@ export const checkCache = async (req, res, next) => {
   }
 };
 
-export const addToCache = (req, expirationTime = 300, value) => {
+export enum Time {
+  FIVE_MINUTES = 60 * 5,
+  THIRTY_MINUTES = 60 * 30,
+  ONE_HOUR = 60 * 60
+}
+
+export const addToCache = (req, expirationTime = Time.FIVE_MINUTES, value) => {
   if (config.ENV === 'test') return;
 
   const key = buildKey(req);

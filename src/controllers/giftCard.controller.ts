@@ -2,9 +2,10 @@ import { Request } from 'express';
 import httpStatus from 'http-status';
 import { Listing, Market } from '~/models';
 import GiftCard, { GiftCardType, GiftCardDocument } from '~/models/giftCard.model';
-import { ListingDocument, ListingType } from '~/models/listing.model';
+import { ListingType } from '~/models/listing.model';
+import HistoricalRecord, { HistoricalRecordDocument } from '~/models/historicalRecord';
 import APIError from '~/utils/APIError.utils';
-import { addToCache } from '~/utils/redis.utils';
+import { addToCache, Time } from '~/utils/redis.utils';
 
 interface GetParams {
   giftCardId: number;
@@ -12,13 +13,16 @@ interface GetParams {
 
 const get = async (req: Request<GetParams>, res, next) => {
   try {
-    const giftCard = await GiftCard.findById(req.params.giftCardId);
+    const giftCard = await GiftCard.findById(req.params.giftCardId)
+      .populate('listings')
+      .populate('historicalRecords')
+      .exec();
 
     if (!giftCard) {
       return next(new APIError('GiftCard not found', httpStatus.NOT_FOUND));
     }
 
-    addToCache(req, 300, giftCard);
+    addToCache(req, Time.ONE_HOUR, giftCard);
 
     return res.json(giftCard);
   } catch (err) {
@@ -97,6 +101,52 @@ const updateListings = async (
   }
 };
 
-export default { get, list, create, updateListings };
+interface UpsertParams {
+  giftCardId: number;
+}
 
-// api/giftCards/home-depot
+interface UpsertBody {
+  marketId: string;
+}
+
+const upsertHistoricalRecord = async (
+  req: Request<UpsertParams, HistoricalRecordDocument, UpsertBody>,
+  res,
+  next
+) => {
+  try {
+    const market = await Market.findById(req.body.marketId);
+    const giftCard = await GiftCard.findById(req.params.giftCardId).populate('listings');
+
+    const data = giftCard.listings.reduce<any>(
+      ({ inventory, bestSavings, totalSavings }, el: ListingType) => ({
+        inventory: inventory + el.value,
+        bestSavings: Math.max(bestSavings, el.savings),
+        totalSavings: totalSavings + el.value * (el.savings / 100)
+      }),
+      { inventory: 0, bestSavings: 0, totalSavings: 0 }
+    );
+
+    const today = new Date().toISOString().split('T')[0];
+
+    const historicalRecord = await HistoricalRecord.findOneAndUpdate(
+      { date: today },
+      {
+        date: today,
+        quantity: giftCard.listings.length,
+        inventory: data.inventory,
+        bestSavings: data.bestSavings,
+        avgSavings: data.inventory / data.totalSavings,
+        giftCard: giftCard.id,
+        market: market.id
+      },
+      { new: true, upsert: true }
+    );
+
+    return res.status(httpStatus.CREATED).json(historicalRecord);
+  } catch (err) {
+    return next(err);
+  }
+};
+
+export default { get, list, create, updateListings, upsertHistoricalRecord };
