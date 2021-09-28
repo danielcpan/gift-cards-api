@@ -2,7 +2,7 @@ import { Document, Schema, Model, model } from 'mongoose';
 import { GiftCardType } from './giftCard.model';
 import type { MarketType } from './market.model';
 
-interface HistoricalRecordType {
+export interface HistoricalRecordType {
   // Note: Not a true date, has YYYY-MM-DD format
   date: string;
   quantity: number;

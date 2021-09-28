@@ -7,7 +7,7 @@ import readline from 'readline';
 import { Markets } from '~/models/market.model';
 import { delay } from '~/utils/generic.utils';
 import { GiftCardDocument, GiftCardType } from '~/models/giftCard.model';
-import { giftCardCtrlInternal } from '~/controllers';
+import giftCardService from '~/services/giftCard.service';
 
 // NOTE: Raise Scraper Client
 const raiseClient = axios.create({ baseURL: 'https://www.raise.com' });
@@ -93,7 +93,7 @@ const logResults = (fufilled: string[], rejected: string[]) => {
   }
 };
 
-const run = async () => {
+const importGiftCardsJob = async () => {
   const ids = await getGiftCardIds();
 
   const [fufilled, rejected] = [[], []];
@@ -105,12 +105,12 @@ const run = async () => {
         const [giftCardDetails, paginationDetails] = await getGiftCardDetails(id);
 
         // NOTE: Create gift card if doesn't exist
-        const giftCard = await giftCardCtrlInternal.create(giftCardDetails);
+        const giftCard = await giftCardService.create(giftCardDetails);
 
         const listings = await getListings(giftCard.id, paginationDetails);
 
         // NOTE: Import listings
-        await giftCardCtrlInternal.updateListings({
+        await giftCardService.updateListings({
           giftCardId: giftCard.id,
           marketId: Markets.RAISE,
           listings
@@ -133,4 +133,4 @@ const run = async () => {
   logResults(fufilled, rejected);
 };
 
-run();
+importGiftCardsJob();

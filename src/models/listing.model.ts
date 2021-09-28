@@ -15,6 +15,8 @@ export interface ListingType {
   market: MarketType;
 }
 
+export type ListingDTO = Pick<ListingType, 'type' | 'value' | 'savings'>;
+
 export interface ListingDocument extends ListingType, Document {}
 
 interface ListingModel extends Model<ListingDocument> {}

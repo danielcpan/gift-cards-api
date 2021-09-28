@@ -11,6 +11,8 @@ export interface GiftCardType {
   historicalRecords: HistoricalRecordType[];
 }
 
+export type GiftCardDTO = Pick<GiftCardType, 'name' | 'logoUrl'>;
+
 export interface GiftCardDocument extends GiftCardType, Document {}
 
 interface GiftCardModel extends Model<GiftCardDocument> {}
