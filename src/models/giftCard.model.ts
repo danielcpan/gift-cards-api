@@ -3,15 +3,17 @@ import { HistoricalRecordType } from './historicalRecord';
 import { ListingType } from './listing.model';
 import type { MarketType } from './market.model';
 
-export interface GiftCardType {
+export interface GiftCardDTO {
+  name: string;
+  logoUrl: string;
+}
+export interface GiftCardType extends GiftCardDTO {
   name: string;
   logoUrl: string;
   listings: ListingType[];
   markets: MarketType[];
   historicalRecords: HistoricalRecordType[];
 }
-
-export type GiftCardDTO = Pick<GiftCardType, 'name' | 'logoUrl'>;
 
 export interface GiftCardDocument extends GiftCardType, Document {}
 

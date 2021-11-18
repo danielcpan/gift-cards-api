@@ -2,13 +2,15 @@ import { Document, Schema, Model, model } from 'mongoose';
 import { GiftCardType } from './giftCard.model';
 import type { MarketType } from './market.model';
 
-export interface HistoricalRecordType {
+export interface HistoricalRecordDTO {
   // Note: Not a true date, has YYYY-MM-DD format
-  date: string;
+  date: Date;
   quantity: number;
   inventory: number;
   bestSavings: number;
   avgSavings: number;
+}
+export interface HistoricalRecordType extends HistoricalRecordDTO {
   giftCard: GiftCardType;
   market: MarketType;
 }
@@ -19,7 +21,7 @@ interface HistoricalRecordModel extends Model<HistoricalRecordDocument> {}
 
 const HistoricalRecordSchema = new Schema<HistoricalRecordDocument, HistoricalRecordModel>(
   {
-    date: { type: String, required: true, unique: true },
+    date: { type: Date, required: true, unique: true },
     quantity: { type: Number, required: true },
     inventory: { type: Number, required: true },
     bestSavings: { type: Number, required: true },

@@ -1,6 +1,6 @@
 /* eslint no-console: 0 */
 import server from './server';
-import config from '../config';
+import config from './config';
 import { connectMongo } from './utils/mongoose.utils';
 import { connectRedis } from './utils/redis.utils';
 

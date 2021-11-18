@@ -1,7 +1,7 @@
 import redis from 'redis';
 import { promisify } from 'util';
 import httpStatus from 'http-status';
-import config from '../../config';
+import config from '../config';
 
 const client = redis.createClient();
 

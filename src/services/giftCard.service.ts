@@ -64,7 +64,8 @@ const upsertHistoricalRecord = async (marketId: string, giftCardId: string) => {
     { inventory: 0, bestSavings: 0, totalSavings: 0 }
   );
 
-  const today = new Date().toISOString().split('T')[0];
+  // NOTE: Ignores time values. We only care about date.
+  const today = new Date(new Date().toISOString().split('T')[0]);
 
   const historicalRecord = await HistoricalRecord.findOneAndUpdate(
     { date: today },

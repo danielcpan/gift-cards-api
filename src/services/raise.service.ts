@@ -6,7 +6,7 @@ import path from 'path';
 import readline from 'readline';
 import { Markets } from '~/models/market.model';
 import { delay } from '~/utils/generic.utils';
-import { GiftCardDocument, GiftCardType } from '~/models/giftCard.model';
+import { GiftCardDocument, GiftCardDTO, GiftCardType } from '~/models/giftCard.model';
 import giftCardService from '~/services/giftCard.service';
 
 // NOTE: Raise Scraper Client
@@ -56,14 +56,12 @@ const getListings = async (giftCardId: string, { page, totalCards }: PaginationD
   }
 };
 
-const getGiftCardDetails = async (
-  id: string
-): Promise<[Pick<GiftCardType, 'name' | 'logoUrl'>, PaginationDetails]> => {
+const getGiftCardDetails = async (id: string): Promise<[GiftCardDTO, PaginationDetails]> => {
   try {
     const params = { type: 'paths', keywords: id };
     const data = (await raiseClient.get('/query', { params })).data;
 
-    const giftCardDetails = {
+    const giftCardDTO: GiftCardDTO = {
       name: data.name,
       logoUrl: data.src
     };
@@ -75,7 +73,7 @@ const getGiftCardDetails = async (
       totalCards: data.totalCards
     };
 
-    return [giftCardDetails, paginationDetails];
+    return [giftCardDTO, paginationDetails];
   } catch (err) {
     throw err;
   }
@@ -98,7 +96,7 @@ const importGiftCardsJob = async () => {
 
   const [fufilled, rejected] = [[], []];
   await Promise.allSettled(
-    ids.map(async (id, idx) => {
+    ids.slice(0, 10).map(async (id, idx) => {
       await delay(idx * 50);
 
       try {

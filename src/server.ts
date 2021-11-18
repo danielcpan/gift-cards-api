@@ -8,7 +8,7 @@ import routes from './routes';
 import expressWinstonLogger from './utils/winston.utils';
 import { convertToAPIError, httpError, log } from './utils/error-handler.utils';
 
-import config from 'config';
+import config from '~/config';
 
 const app = express();
 
