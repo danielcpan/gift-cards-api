@@ -1,6 +1,6 @@
 import express from 'express';
-import { giftCardCtrl } from '~/controllers';
-import { checkCache } from '~/utils/redis.utils';
+import { giftCardCtrl } from '../controllers';
+import { checkCache } from '../utils/redis.utils';
 
 const router = express.Router();
 

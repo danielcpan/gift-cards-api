@@ -1,9 +1,8 @@
 import { Request } from 'express';
 import httpStatus from 'http-status';
-import GiftCard from '~/models/giftCard.model';
-import giftCardService from '~/services/giftCard.service';
-import APIError from '~/utils/APIError.utils';
-import { addToCache, Time } from '~/utils/redis.utils';
+import giftCardService from '../services/giftCard.service';
+import APIError from '../utils/APIError.utils';
+import { addToCache, Time } from '../utils/redis.utils';
 
 interface GetParams {
   giftCardId: string;

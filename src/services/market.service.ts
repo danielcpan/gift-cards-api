@@ -1,4 +1,4 @@
-import Market from '~/models/market.model';
+import Market from '../models/market.model';
 
 const get = (marketId: string) => {
   return Market.findById(marketId);

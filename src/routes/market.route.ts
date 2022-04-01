@@ -1,6 +1,6 @@
 import express from 'express';
-import { marketCtrl } from '~/controllers';
-import { checkCache } from '~/utils/redis.utils';
+import { marketCtrl } from '../controllers';
+import { checkCache } from '../utils/redis.utils';
 
 const router = express.Router();
 

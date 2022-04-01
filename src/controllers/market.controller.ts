@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction as Next } from 'express';
 import httpStatus from 'http-status';
-import { MarketDocument } from '~/models/market.model';
-import marketService from '~/services/market.service';
-import APIError from '~/utils/APIError.utils';
-import { addToCache } from '~/utils/redis.utils';
+import { MarketDocument } from '../models/market.model';
+import marketService from '../services/market.service';
+import APIError from '../utils/APIError.utils';
+import { addToCache } from '../utils/redis.utils';
 
 interface GetParams {
   marketId: string;

@@ -1,7 +1,7 @@
-import GiftCard, { GiftCardDTO } from '~/models/giftCard.model';
-import Listing, { ListingType, ListingDTO } from '~/models/listing.model';
-import Market from '~/models/market.model';
-import HistoricalRecord from '~/models/historicalRecord';
+import GiftCard, { GiftCardDTO } from '../models/giftCard.model';
+import Listing, { ListingType, ListingDTO } from '../models/listing.model';
+import Market from '../models/market.model';
+import HistoricalRecord from '../models/historicalRecord';
 
 const get = (giftCardId: string) => {
   return GiftCard.findById(giftCardId).populate('listings').populate('historicalRecords').exec();

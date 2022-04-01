@@ -4,10 +4,10 @@ import { parse } from 'json2csv';
 import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
-import { Markets } from '~/models/market.model';
-import { delay } from '~/utils/generic.utils';
-import { GiftCardDocument, GiftCardDTO, GiftCardType } from '~/models/giftCard.model';
-import giftCardService from '~/services/giftCard.service';
+import { Markets } from '../models/market.model';
+import { delay } from '../utils/generic.utils';
+import { GiftCardDocument, GiftCardDTO, GiftCardType } from '../models/giftCard.model';
+import giftCardService from '../services/giftCard.service';
 
 // NOTE: Raise Scraper Client
 const raiseClient = axios.create({ baseURL: 'https://www.raise.com' });
@@ -56,14 +56,30 @@ const getListings = async (giftCardId: string, { page, totalCards }: PaginationD
   }
 };
 
-const getGiftCardDetails = async (id: string): Promise<[GiftCardDTO, PaginationDetails]> => {
+// const getGiftCardDetails = async (id: string): Promise<[GiftCardDTO, PaginationDetails]> => {
+const getGiftCardDetails = async (id: string): Promise<[any, PaginationDetails]> => {
   try {
     const params = { type: 'paths', keywords: id };
-    const data = (await raiseClient.get('/query', { params })).data;
+    const { data } = await raiseClient.get('/query', { params });
 
-    const giftCardDTO: GiftCardDTO = {
+    // console.log('data:', data);
+
+    // const giftCardDTO: GiftCardDTO = {
+    //   name: data.name,
+    //   logoUrl: data.src,
+    // };
+
+    const gcData = {
+      extId: id,
       name: data.name,
-      logoUrl: data.src
+      logoUrl: data.src,
+      available: data.available,
+      quantityAvailable: data.quantity_available,
+      rating: data.rating,
+      ratingCount: data.ratingCount,
+      cashback: data.cashback,
+      savings: data.savings,
+      soldLastDay: data.sellingRate.last_day
     };
 
     const paginationDetails: PaginationDetails = {
@@ -73,15 +89,28 @@ const getGiftCardDetails = async (id: string): Promise<[GiftCardDTO, PaginationD
       totalCards: data.totalCards
     };
 
-    return [giftCardDTO, paginationDetails];
+    // return [giftCardDTO, paginationDetails];
+    return [gcData, paginationDetails];
   } catch (err) {
     throw err;
   }
 };
 
-const logResults = (fufilled: string[], rejected: string[]) => {
+const logResults2 = (fufilled: string[], rejected: string[]) => {
   try {
     const csv = parse({ fufilled, rejected });
+
+    const fileName = new Date().toISOString().split('T')[0];
+
+    fs.writeFileSync(path.resolve(__dirname, `./raise-import-results-${fileName}.csv`), csv);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const logResults = (giftCards: any[]) => {
+  try {
+    const csv = parse(giftCards);
 
     const fileName = new Date().toISOString().split('T')[0];
 
@@ -94,41 +123,37 @@ const logResults = (fufilled: string[], rejected: string[]) => {
 const importGiftCardsJob = async () => {
   const ids = await getGiftCardIds();
 
-  const [fufilled, rejected] = [[], []];
+  const contents = fs.readFileSync(path.resolve(__dirname, 'blacklistedIds.txt'), 'utf-8');
+  const blacklistedIds = new Set(contents.split(/\r?\n/).map(id => id));
+
+  const filteredIds = ids.filter(id => !blacklistedIds.has(id));
+  const fufilled = [];
+  const rejected = [];
+
   await Promise.allSettled(
-    ids.slice(0, 10).map(async (id, idx) => {
-      await delay(idx * 50);
-
+    filteredIds.map(async (id, idx) => {
       try {
-        const [giftCardDetails, paginationDetails] = await getGiftCardDetails(id);
+        await delay(idx * 50);
 
-        // NOTE: Create gift card if doesn't exist
-        const giftCard = await giftCardService.create(giftCardDetails);
+        const giftCard = (await getGiftCardDetails(id))[0];
+        console.log('idx:', idx);
 
-        const listings = await getListings(giftCard.id, paginationDetails);
-
-        // NOTE: Import listings
-        await giftCardService.updateListings({
-          giftCardId: giftCard.id,
-          marketId: Markets.RAISE,
-          listings
-        });
-
-        fufilled.push(giftCard.id);
+        fufilled.push(giftCard);
         return giftCard;
       } catch (err) {
         rejected.push(id);
-        console.error(`\t ${err.message}`);
-      } finally {
-        readline.cursorTo(process.stdout, 0);
-        process.stdout.write(`Importing ${idx}/${ids.length}... [ Failed: ${rejected.length} ]`);
       }
     })
   );
 
-  console.error('rejected:', rejected);
+  console.log('fufilled:', fufilled.length);
+  const giftCards = fufilled.filter(
+    (el: any) => parseFloat(el.rating) > 0 && el.ratingCount >= 100
+  );
 
-  logResults(fufilled, rejected);
+  console.log('rejected ids:', rejected);
+
+  logResults(giftCards);
 };
 
 importGiftCardsJob();

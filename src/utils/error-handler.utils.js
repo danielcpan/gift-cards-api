@@ -1,6 +1,6 @@
 import expressValidation from 'express-validation';
 import APIError from './APIError.utils';
-import config from '~/config';
+import config from '../config';
 
 // TODO: Convert to TS
 export const convertToAPIError = (err, req, res, next) => {
