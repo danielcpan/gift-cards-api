@@ -3,12 +3,13 @@ import { GiftCardType } from './giftCard.model';
 import type { MarketType } from './market.model';
 
 export interface HistoricalRecordDTO {
-  // Note: Not a true date, has YYYY-MM-DD format
-  date: Date;
-  quantity: number;
-  inventory: number;
-  bestSavings: number;
-  avgSavings: number;
+  available: boolean;
+  quantityAvailable: number;
+  rating: string;
+  ratingCount: number;
+  cashback: string;
+  savings: string;
+  soldLastDay: number;
 }
 export interface HistoricalRecordType extends HistoricalRecordDTO {
   giftCard: GiftCardType;
@@ -21,13 +22,14 @@ interface HistoricalRecordModel extends Model<HistoricalRecordDocument> {}
 
 const HistoricalRecordSchema = new Schema<HistoricalRecordDocument, HistoricalRecordModel>(
   {
-    date: { type: Date, required: true, unique: true },
-    quantity: { type: Number, required: true },
-    inventory: { type: Number, required: true },
-    bestSavings: { type: Number, required: true },
-    avgSavings: { type: Number, required: true },
-    giftCard: { type: Schema.Types.ObjectId, ref: 'GiftCard' },
-    market: { type: Schema.Types.ObjectId, ref: 'Market' }
+    available: { type: Boolean, required: true },
+    quantityAvailable: { type: Number, required: true },
+    rating: { type: String, required: true },
+    ratingCount: { type: Number, required: true },
+    cashback: { type: String, required: true },
+    savings: { type: String, required: true },
+    soldLastDay: { type: Number, required: true },
+    giftCard: { type: Schema.Types.ObjectId, ref: 'GiftCard' }
   },
   {
     timestamps: true

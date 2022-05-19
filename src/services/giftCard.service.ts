@@ -1,87 +1,73 @@
-import GiftCard, { GiftCardDTO } from '../models/giftCard.model';
-import Listing, { ListingType, ListingDTO } from '../models/listing.model';
-import Market from '../models/market.model';
-import HistoricalRecord from '../models/historicalRecord';
+import GiftCard, { GiftCardDocument, GiftCardDTO } from '../models/giftCard.model';
+import Market, { Markets } from '../models/market.model';
+import HistoricalRecord, { HistoricalRecordDTO } from '../models/historicalRecord.model';
 
 const get = (giftCardId: string) => {
-  return GiftCard.findById(giftCardId).populate('listings').populate('historicalRecords').exec();
+  return GiftCard.findById(giftCardId).populate('historicalRecords').exec();
 };
 
-const list = () => {
-  return GiftCard.find();
+const upsert = async (giftCardData: GiftCardDTO) => {
+  try {
+    const giftCard = await GiftCard.findOneAndUpdate(
+      { extId: giftCardData.extId },
+      // { ...giftCardData, market: Markets.RAISE },
+      { ...giftCardData, market: giftCardData.market },
+      {
+        new: true,
+        upsert: true,
+        populate: 'market'
+      }
+    );
+
+    // const historicalRecord = await HistoricalRecord.findOneAndUpdate({
+    //   market: giftCard.market._id,
+    //   createdAt: {
+    //     $gte: startOfDay,
+    //     $lte: endOfDay
+    //   }
+    // });
+
+    // giftCard.historicalRecords.push(historicalRecord._id);
+
+    // giftCard.save();
+
+    return giftCard;
+  } catch (err) {
+    console.error('GiftCard Upsert Error:', err);
+  }
 };
 
-const create = async (data: GiftCardDTO) => {
-  let giftCard = await GiftCard.findOne({ name: data.name });
+// const upsertHistoricalRecord = async (marketId: string, giftCardId: string) => {
+//   const market = await Market.findById(marketId);
+//   const giftCard = await GiftCard.findById(giftCardId).populate('listings');
 
-  // NOTE: Don't raise error if exists
-  if (giftCard !== null) return giftCard;
+//   const data = giftCard.listings.reduce<any>(
+//     ({ inventory, bestSavings, totalSavings }, el: ListingType) => ({
+//       inventory: inventory + el.value,
+//       bestSavings: Math.max(bestSavings, el.savings),
+//       totalSavings: totalSavings + el.value * (el.savings / 100)
+//     }),
+//     { inventory: 0, bestSavings: 0, totalSavings: 0 }
+//   );
 
-  giftCard = new GiftCard(data);
+//   // NOTE: Ignores time values. We only care about date.
+//   const today = new Date(new Date().toISOString().split('T')[0]);
 
-  await giftCard.save();
+//   const historicalRecord = await HistoricalRecord.findOneAndUpdate(
+//     { date: today },
+//     {
+//       date: today,
+//       quantity: giftCard.listings.length,
+//       inventory: data.inventory,
+//       bestSavings: data.bestSavings,
+//       avgSavings: data.inventory / data.totalSavings,
+//       giftCard: giftCard.id,
+//       market: market.id
+//     },
+//     { new: true, upsert: true }
+//   );
 
-  return giftCard;
-};
+//   return historicalRecord;
+// };
 
-interface UpdateListingsPayload {
-  giftCardId: string;
-  marketId: string;
-  listings: ListingDTO[];
-}
-
-const updateListings = async (payload: UpdateListingsPayload) => {
-  const { giftCardId, marketId, listings } = payload;
-  const market = await Market.findById(marketId);
-  const giftCard = await GiftCard.findById(giftCardId);
-
-  // NOTE: Delete Existing
-  await Listing.deleteMany({ giftCard: giftCard.id, market: market.id });
-
-  const listingsData = listings.map(listing => ({
-    ...listing,
-    giftCard: giftCard.id,
-    market: market.id
-  }));
-
-  Listing.collection.insertMany(listingsData, (err, result) => {
-    if (err) throw err;
-
-    return result;
-  });
-};
-
-const upsertHistoricalRecord = async (marketId: string, giftCardId: string) => {
-  const market = await Market.findById(marketId);
-  const giftCard = await GiftCard.findById(giftCardId).populate('listings');
-
-  const data = giftCard.listings.reduce<any>(
-    ({ inventory, bestSavings, totalSavings }, el: ListingType) => ({
-      inventory: inventory + el.value,
-      bestSavings: Math.max(bestSavings, el.savings),
-      totalSavings: totalSavings + el.value * (el.savings / 100)
-    }),
-    { inventory: 0, bestSavings: 0, totalSavings: 0 }
-  );
-
-  // NOTE: Ignores time values. We only care about date.
-  const today = new Date(new Date().toISOString().split('T')[0]);
-
-  const historicalRecord = await HistoricalRecord.findOneAndUpdate(
-    { date: today },
-    {
-      date: today,
-      quantity: giftCard.listings.length,
-      inventory: data.inventory,
-      bestSavings: data.bestSavings,
-      avgSavings: data.inventory / data.totalSavings,
-      giftCard: giftCard.id,
-      market: market.id
-    },
-    { new: true, upsert: true }
-  );
-
-  return historicalRecord;
-};
-
-export default { get, list, create, updateListings, upsertHistoricalRecord };
+export default { get, upsert };

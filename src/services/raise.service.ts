@@ -6,13 +6,15 @@ import path from 'path';
 import readline from 'readline';
 import { Markets } from '../models/market.model';
 import { delay } from '../utils/generic.utils';
-import { GiftCardDocument, GiftCardDTO, GiftCardType } from '../models/giftCard.model';
+import { CardTypes, GiftCardDocument, GiftCardDTO, GiftCardType } from '../models/giftCard.model';
 import giftCardService from '../services/giftCard.service';
+import marketService from './market.service';
+import { HistoricalRecordDTO } from 'src/models/historicalRecord.model';
 
 // NOTE: Raise Scraper Client
 const raiseClient = axios.create({ baseURL: 'https://www.raise.com' });
 
-const getGiftCardIds = async () => {
+const getGiftCardKeywords = async () => {
   try {
     const response = await raiseClient.get('/gift-card-balance');
 
@@ -57,10 +59,30 @@ const getListings = async (giftCardId: string, { page, totalCards }: PaginationD
 };
 
 // const getGiftCardDetails = async (id: string): Promise<[GiftCardDTO, PaginationDetails]> => {
-const getGiftCardDetails = async (id: string): Promise<[any, PaginationDetails]> => {
+const getGiftCardDetails = async (keyword: string): Promise<[any, PaginationDetails]> => {
   try {
-    const params = { type: 'paths', keywords: id };
+    const params = { type: 'paths', keywords: keyword };
     const { data } = await raiseClient.get('/query', { params });
+
+    // const gcData: GiftCardDTO = {
+    //   extId: data.id,
+    //   name: data.name,
+    //   logoUrl: data.src,
+    //   type: data.electronic ? CardTypes.DIGITAL : CardTypes.PHYSICAL,
+    //   market: Markets.RAISE
+    // };
+
+    // await marketService.upsert(gcData);
+
+    // const hrData: HistoricalRecordDTO = {
+    //   available: data.available,
+    //   quantityAvailable: data.quantity_available,
+    //   rating: data.rating,
+    //   ratingCount: data.ratingCount,
+    //   cashback: data.cashBack,
+    //   savings: data.savings,
+    //   soldLastDay: data.sellingRate.last_day
+    // };
 
     // console.log('data:', data);
 
@@ -69,15 +91,28 @@ const getGiftCardDetails = async (id: string): Promise<[any, PaginationDetails]>
     //   logoUrl: data.src,
     // };
 
-    const gcData = {
-      extId: id,
+    const gcData: {
+      keyword: string;
+      extId: string;
+      name: string;
+      logoUrl: string;
+      available: boolean;
+      quantityAvailable: number;
+      rating: string;
+      ratingCount: number;
+      cashback: string;
+      savings: string;
+      soldLastDay: number;
+    } = {
+      keyword,
+      extId: data.id,
       name: data.name,
       logoUrl: data.src,
       available: data.available,
       quantityAvailable: data.quantity_available,
       rating: data.rating,
       ratingCount: data.ratingCount,
-      cashback: data.cashback,
+      cashback: data.cashBack,
       savings: data.savings,
       soldLastDay: data.sellingRate.last_day
     };
@@ -96,52 +131,42 @@ const getGiftCardDetails = async (id: string): Promise<[any, PaginationDetails]>
   }
 };
 
-const logResults2 = (fufilled: string[], rejected: string[]) => {
-  try {
-    const csv = parse({ fufilled, rejected });
-
-    const fileName = new Date().toISOString().split('T')[0];
-
-    fs.writeFileSync(path.resolve(__dirname, `./raise-import-results-${fileName}.csv`), csv);
-  } catch (err) {
-    console.error(err);
-  }
-};
-
 const logResults = (giftCards: any[]) => {
   try {
     const csv = parse(giftCards);
 
     const fileName = new Date().toISOString().split('T')[0];
+    const filePath = path.resolve(__dirname, `./raise-import-results-${fileName}.csv`);
 
-    fs.writeFileSync(path.resolve(__dirname, `./raise-import-results-${fileName}.csv`), csv);
+    fs.writeFileSync(filePath, csv);
   } catch (err) {
     console.error(err);
   }
 };
 
 const importGiftCardsJob = async () => {
-  const ids = await getGiftCardIds();
+  const keywords = await getGiftCardKeywords();
 
-  const contents = fs.readFileSync(path.resolve(__dirname, 'blacklistedIds.txt'), 'utf-8');
-  const blacklistedIds = new Set(contents.split(/\r?\n/).map(id => id));
+  const blacklistFilePath = path.resolve(__dirname, 'blacklistedKeywords.txt');
+  const contents = fs.readFileSync(blacklistFilePath, 'utf-8');
+  const blacklistedKeywords = new Set(contents.split(/\r?\n/));
 
-  const filteredIds = ids.filter(id => !blacklistedIds.has(id));
+  const filteredKeywords = keywords.filter(keyword => !blacklistedKeywords.has(keyword));
   const fufilled = [];
   const rejected = [];
 
   await Promise.allSettled(
-    filteredIds.map(async (id, idx) => {
+    filteredKeywords.map(async (keyword, idx) => {
       try {
         await delay(idx * 50);
 
-        const giftCard = (await getGiftCardDetails(id))[0];
-        console.log('idx:', idx);
+        const giftCard = (await getGiftCardDetails(keyword))[0];
+        process.stdout.write(`Importing: ${idx}/${filteredKeywords.length - 1} \r`);
 
         fufilled.push(giftCard);
         return giftCard;
       } catch (err) {
-        rejected.push(id);
+        rejected.push(keyword);
       }
     })
   );
@@ -155,5 +180,9 @@ const importGiftCardsJob = async () => {
 
   logResults(giftCards);
 };
+
+// const testCreate = () => {
+//   Mark
+// }
 
 importGiftCardsJob();

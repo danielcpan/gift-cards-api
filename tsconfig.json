@@ -2,6 +2,7 @@
   "compilerOptions": {
     "strict": false,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "baseUrl": "."
   },
   "include": ["src/**/*"]

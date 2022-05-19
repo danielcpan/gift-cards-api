@@ -27,7 +27,7 @@ const get = async (req: Request<GetParams>, res: Response<MarketDocument>, next:
 
 const list = async (req, res, next) => {
   try {
-    const markets = await marketService.list;
+    const markets = await marketService.list();
 
     addToCache(req, 300, markets);
 

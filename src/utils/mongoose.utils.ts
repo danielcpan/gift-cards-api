@@ -3,11 +3,14 @@ import config from '../config';
 
 export const connectMongo = () => {
   try {
-    mongoose.connect(config.MONGODB_URI, {
+    mongoose.connect(config.MONGO_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      useCreateIndex: true
+      useCreateIndex: true,
+      useFindAndModify: false
     });
+
+    // mongoose.set('useFindAndModify', false);
 
     console.log('Mongo Connection Successful');
   } catch (err) {
